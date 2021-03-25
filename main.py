@@ -3,31 +3,37 @@ import sys
 
 # Initialize pygame variables -----------------------------------------------------------------------------------------#
 pygame.init()
-clock = pygame.time.Clock()
-WINDOW_SIZE = [800, 1000]
+WINDOW_SIZE = [630, 900]
 FPS = 60
+ROWS = 9
+ROW_SIZE = 5
+mainClock = pygame.time.Clock()
 mainScreen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption("Sudoku solver")
 
-rect = pygame.Rect(100, 100, 100, 100)
-speedY = 0
+
+def draw(screen, size):
+    screen.fill((255, 255, 255))
+    draw_grid(screen, size, ROWS)
 
 
-def draw(screen):
-    screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (255, 255, 255), rect)
+def draw_grid(screen, size, ROWS):
+    gap = size[0] // ROWS
+    for i in range(ROWS + 1):
+        pygame.draw.line(screen, (128, 128, 128), (0, i * gap), (size[0], i * gap))
+    for i in range(ROWS):
+        pygame.draw.line(screen, (128, 128, 128), (i * gap, 0), (i * gap, size[0]))
+    for i in range(ROWS // 3 - 1):
+        pygame.draw.line(screen, (128, 128, 128), (0, (i + 1) * gap * 3), (size[0], (i + 1) * gap * 3), ROW_SIZE)
+    for i in range(ROWS // 3 - 1):
+        pygame.draw.line(screen, (128, 128, 128), ((i + 1) * gap * 3, 0), ((i + 1) * gap * 3, size[0]), ROW_SIZE)
 
 
 # Main game loop ------------------------------------------------------------------------------------------------------#
 def main(screen, size, clock):
-    global speedY
     run = True
     while run:
-        rect.y += speedY
-        speedY += 0.1
-        draw(screen)
-        if rect.y + rect.height >= WINDOW_SIZE[1]:
-            speedY *= -1
+        draw(screen, size)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -37,4 +43,4 @@ def main(screen, size, clock):
         clock.tick(FPS)
 
 
-main(mainScreen, WINDOW_SIZE, clock)
+main(mainScreen, WINDOW_SIZE, mainClock)
