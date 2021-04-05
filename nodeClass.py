@@ -25,7 +25,7 @@ class Node:
         self.isInitial = False
 
     def get_pos(self):
-        return self.row, self.col
+        return self.col, self.row
 
     def get_value(self):
         return self.value
