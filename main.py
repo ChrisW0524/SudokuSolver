@@ -1,6 +1,6 @@
 import pygame
 import sys
-import random
+import requests
 import nodeClass
 
 # Initialize pygame variables -----------------------------------------------------------------------------------------#
@@ -15,6 +15,7 @@ mainClock = pygame.time.Clock()
 mainScreen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption("Sudoku solver")
 
+
 # Draw elements
 def draw(screen, size, grid):
     screen.fill((255, 255, 255))
@@ -22,6 +23,7 @@ def draw(screen, size, grid):
         for j in i:
             j.draw(screen)
     draw_grid(screen, size, ROWS)
+
 
 # Draw grid
 def draw_grid(screen, size, ROWS):
@@ -37,16 +39,22 @@ def draw_grid(screen, size, ROWS):
             pygame.draw.line(screen, nodeClass.BLACK, (i * gap + WINDOW_GAP, WINDOW_GAP),
                              (i * gap + WINDOW_GAP, size[0] - WINDOW_GAP), 4)
 
+
 # Initialize grid with nodes
 def make_grid(size):
+    response = requests.get("https://sugoku.herokuapp.com/board?difficulty=easy")
+    values = response.json()['board']
     grid = []
     gap = (size[0] - WINDOW_GAP * 2) // ROWS
     for i in range(9):
         grid.append([])
         for j in range(9):
-            node = nodeClass.Node(i, j, gap, random.randint(1, 9), 50)
+            node = nodeClass.Node(i, j, gap, values[j][i], 50)
+            if node.get_value() != 0:
+                node.set_isInitial(True)
             grid[i].append(node)
     return grid
+
 
 # Translates mouse pos to grid pos
 def get_clicked_pos(size):
@@ -72,9 +80,10 @@ def main(screen, size, clock):
         # Event loop
         for event in pygame.event.get():
             # Mouse input (left click)
-            if pygame.mouse.get_pressed()[0]:
+            if pygame.mouse.get_pressed()[0] and event.type == pygame.MOUSEBUTTONDOWN:
                 # Make selection node
-                if WINDOW_GAP <= pygame.mouse.get_pos()[0] <= WINDOW_LENGTH + WINDOW_GAP and WINDOW_GAP <= pygame.mouse.get_pos()[1] <= WINDOW_LENGTH + WINDOW_GAP:
+                if WINDOW_GAP <= pygame.mouse.get_pos()[0] <= WINDOW_LENGTH + WINDOW_GAP and WINDOW_GAP <= \
+                        pygame.mouse.get_pos()[1] <= WINDOW_LENGTH + WINDOW_GAP:
                     row, col = get_clicked_pos(size)
                     spot = grid[row][col]
                     # Reset other nodes
@@ -84,6 +93,7 @@ def main(screen, size, clock):
                                 j.reset()
                     selected = spot
                     spot.make_selected()
+                    print(spot.get_isInitial())
 
             if event.type == pygame.QUIT:
                 pygame.quit()
