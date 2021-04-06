@@ -2,7 +2,6 @@ import pygame
 import sys
 import requests
 import nodeClass
-import solver
 
 # Initialize pygame variables -----------------------------------------------------------------------------------------#
 pygame.init()
@@ -16,13 +15,16 @@ mainClock = pygame.time.Clock()
 mainScreen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption("Sudoku solver")
 
+
 # Draw elements
-def draw(screen, size, grid):
+def draw(screen, size, grid, clock):
     screen.fill((255, 255, 255))
     for i in grid:
         for j in i:
             j.draw(screen)
     draw_grid(screen, size, ROWS)
+    pygame.display.update()
+    clock.tick(FPS)
 
 
 # Draw grid
@@ -64,7 +66,72 @@ def get_clicked_pos(size):
     col = (x - WINDOW_GAP) // gap
     return row, col
 
+# Checks if number in sudoku grid is valid
+def check_possible(grid, row, col, number):
+    # Check if rows are possible
+    for i in range(0, 9):
+        if grid[row][i].get_value() == number:
+            return False
 
+    # Check if columns are possible
+    for i in range(0, 9):
+        if grid[i][col].get_value() == number:
+            return False
+
+    # Check if squares are possible
+    y = (row // 3) * 3
+    x = (col // 3) * 3
+    for i in range(y, y + 3):
+        for j in range(x, x + 3):
+            if grid[i][j].get_value() == number:
+                return False
+
+    return True
+
+
+# Backtracking algorithm to solve sudoku
+def solve(screen, size, grid, clock):
+    draw(screen, size, grid, clock)
+    pygame.time.wait(0)
+    print(' ')
+    test = []
+    for i in grid:
+        test.append(i)
+
+    for i in test:
+        for j in i:
+            print(j.get_value(), end='')
+            print(' ', end='')
+        print('')
+    find = None
+
+    # Finds next empty node
+    for row in grid:
+        for node in row:
+            if node.get_value() == 0:
+                find = node
+
+    # Ends algorithm if there are no empty nodes
+    if not find:
+        return True
+
+    row, col = find.get_pos()
+
+    # Checks All values from 1-9 to see if the values are valid
+    for i in range(1, 10):
+        if check_possible(grid, row, col, i):
+
+            # Assign value to node
+            grid[row][col].set_value(i)
+
+            # Continues backtracking algorithm
+            if solve(screen, size, grid, clock):
+                return True
+
+            # If no solutions are left backtrack and find another solution
+            grid[row][col].set_value(0)
+
+    return False
 
 
 # Main game loop ------------------------------------------------------------------------------------------------------#
@@ -73,18 +140,29 @@ def main(screen, size, clock):
     run = True
     grid = make_grid(size)
 
+    '''print(' ')
+    test = []
+    for i in grid:
+        test.append(i)
+
+    for i in test:
+        for j in i:
+            print(j.get_value(), end='')
+            print(' ', end='')
+        print('')'''
+
     selected = None
 
     while run:
         # Draws elements
-        draw(screen, size, grid)
+        draw(screen, size, grid, clock)
 
         # Event loop
         for event in pygame.event.get():
             # Mouse input (left click)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:
-                # Make selection node
+                    # Make selection node
                     if WINDOW_GAP <= pygame.mouse.get_pos()[0] <= WINDOW_LENGTH + WINDOW_GAP and WINDOW_GAP <= \
                             pygame.mouse.get_pos()[1] <= WINDOW_LENGTH + WINDOW_GAP:
                         row, col = get_clicked_pos(size)
@@ -93,20 +171,20 @@ def main(screen, size, clock):
                         if selected:
                             for i in grid:
                                 for j in i:
-                                    j.reset()
+                                    j.reset_selection()
                         selected = spot
                         spot.make_selected()
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    solver.solve(grid)
+                    solve(screen, size, grid, clock)
+
+                if event.key == pygame.K_ESCAPE:
+                    grid = make_grid(size)
 
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-        pygame.display.update()
-        clock.tick(FPS)
 
 
 main(mainScreen, WINDOW_SIZE, mainClock)

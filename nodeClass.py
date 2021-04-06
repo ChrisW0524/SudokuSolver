@@ -47,7 +47,7 @@ class Node:
             screen.blit(screen_text, (self.x + self.size / 2 - screen_text.get_width() / 2,
                                       self.y + self.size / 2 - screen_text.get_height() / 2))
 
-    def reset(self):
+    def reset_selection(self):
         self.color = WHITE
 
     def make_selected(self):
