@@ -23,6 +23,7 @@ class Node:
         self.value = value
         self.color = (255, 255, 255)
         self.isInitial = False
+        self.isUnmodified = False
 
     def get_pos(self):
         return self.col, self.row
@@ -39,15 +40,21 @@ class Node:
     def set_isInitial(self, value):
         self.isInitial = value
 
+    def get_isUnmodified(self):
+        return self.isUnmodified
+
+    def set_isUnmodified(self, value):
+        self.isUnmodified = value
+
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
         font = pygame.font.SysFont(None, 60)
-        if self.value != 0:
+        if self.value != 0 or self.isUnmodified:
             screen_text = font.render(str(self.value), True, BLACK)
             screen.blit(screen_text, (self.x + self.size / 2 - screen_text.get_width() / 2,
                                       self.y + self.size / 2 - screen_text.get_height() / 2))
 
-    def reset_selection(self):
+    def make_default(self):
         self.color = WHITE
 
     def make_selected(self):

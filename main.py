@@ -123,6 +123,8 @@ def solve(screen, size, grid, clock):
 
             # Assign value to node
             grid[row][col].set_value(i)
+            grid[row][col].set_isUnmodified(True)
+            grid[row][col].make_solved()
 
             # Continues backtracking algorithm
             if solve(screen, size, grid, clock):
@@ -130,6 +132,8 @@ def solve(screen, size, grid, clock):
 
             # If no solutions are left backtrack and find another solution
             grid[row][col].set_value(0)
+            grid[row][col].make_error()
+            draw(screen, size, grid, clock)
 
     return False
 
@@ -171,7 +175,7 @@ def main(screen, size, clock):
                         if selected:
                             for i in grid:
                                 for j in i:
-                                    j.reset_selection()
+                                    j.make_default()
                         selected = spot
                         spot.make_selected()
 
