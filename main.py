@@ -5,12 +5,12 @@ import nodeClass
 
 # Initialize pygame variables -----------------------------------------------------------------------------------------#
 pygame.init()
-WINDOW_SIZE = [730, 900]
+WINDOW_SIZE = [1170, 730]
 FPS = 60
 ROWS = 9
 ROW_SIZE = 5
 WINDOW_GAP = 50
-WINDOW_LENGTH = WINDOW_SIZE[0] - 2 * WINDOW_GAP
+WINDOW_LENGTH = WINDOW_SIZE[1] - 2 * WINDOW_GAP
 mainClock = pygame.time.Clock()
 mainScreen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption("Sudoku solver")
@@ -29,17 +29,17 @@ def draw(screen, size, grid, clock):
 
 # Draw grid
 def draw_grid(screen, size, ROWS):
-    gap = (size[0] - WINDOW_GAP * 2) // ROWS
+    gap = (size[1] - WINDOW_GAP * 2) // ROWS
     for i in range(ROWS + 1):
         pygame.draw.line(screen, nodeClass.BLACK, (WINDOW_GAP, i * gap + WINDOW_GAP),
-                         (size[0] - WINDOW_GAP, i * gap + WINDOW_GAP), 2)
+                         (size[1] - WINDOW_GAP, i * gap + WINDOW_GAP), 2)
         pygame.draw.line(screen, nodeClass.BLACK, (i * gap + WINDOW_GAP, WINDOW_GAP),
-                         (i * gap + WINDOW_GAP, size[0] - WINDOW_GAP), 2)
+                         (i * gap + WINDOW_GAP, size[1] - WINDOW_GAP), 2)
         if i % 3 == 0:
             pygame.draw.line(screen, nodeClass.BLACK, (WINDOW_GAP, i * gap + WINDOW_GAP),
-                             (size[0] - WINDOW_GAP, i * gap + WINDOW_GAP), 4)
+                             (size[1] - WINDOW_GAP, i * gap + WINDOW_GAP), 4)
             pygame.draw.line(screen, nodeClass.BLACK, (i * gap + WINDOW_GAP, WINDOW_GAP),
-                             (i * gap + WINDOW_GAP, size[0] - WINDOW_GAP), 4)
+                             (i * gap + WINDOW_GAP, size[1] - WINDOW_GAP), 4)
 
 
 # Initialize grid with nodes
@@ -47,7 +47,7 @@ def make_grid(size):
     response = requests.get("https://sugoku.herokuapp.com/board?difficulty=easy")
     values = response.json()['board']
     grid = []
-    gap = (size[0] - WINDOW_GAP * 2) // ROWS
+    gap = (size[1] - WINDOW_GAP * 2) // ROWS
     for i in range(9):
         grid.append([])
         for j in range(9):
@@ -61,10 +61,11 @@ def make_grid(size):
 # Translates mouse pos to grid pos
 def get_clicked_pos(size):
     x, y = pygame.mouse.get_pos()
-    gap = (size[0] - WINDOW_GAP * 2) // ROWS
+    gap = (size[1] - WINDOW_GAP * 2) // ROWS
     row = (y - WINDOW_GAP) // gap
     col = (x - WINDOW_GAP) // gap
     return row, col
+
 
 # Checks if number in sudoku grid is valid
 def check_possible(grid, row, col, number):
@@ -92,17 +93,14 @@ def check_possible(grid, row, col, number):
 # Backtracking algorithm to solve sudoku
 def solve(screen, size, grid, clock):
     draw(screen, size, grid, clock)
-    pygame.time.wait(0)
-    print(' ')
-    test = []
-    for i in grid:
-        test.append(i)
+    # pygame.time.wait(0)
 
-    for i in test:
-        for j in i:
-            print(j.get_value(), end='')
-            print(' ', end='')
-        print('')
+    # Check for events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
     find = None
 
     # Finds next empty node
@@ -137,23 +135,24 @@ def solve(screen, size, grid, clock):
 
     return False
 
+def input(grid, selected, value):
+    if not selected:
+        return
+    row, col = selected.get_pos()
+    if selected:
+        if check_possible(grid, row, col, value):
+            selected.set_value(value)
+            selected.make_input_solved()
+        else:
+            selected.set_value(value)
+            selected.make_input_error()
+
 
 # Main game loop ------------------------------------------------------------------------------------------------------#
 def main(screen, size, clock):
     # Initialize game loop variables
     run = True
     grid = make_grid(size)
-
-    '''print(' ')
-    test = []
-    for i in grid:
-        test.append(i)
-
-    for i in test:
-        for j in i:
-            print(j.get_value(), end='')
-            print(' ', end='')
-        print('')'''
 
     selected = None
 
@@ -180,8 +179,40 @@ def main(screen, size, clock):
                         spot.make_selected()
 
             if event.type == pygame.KEYDOWN:
+
+                # Space to solve board
                 if event.key == pygame.K_SPACE:
+                    for i in grid:
+                        for j in i:
+                            j.make_default()
+                            j.reset_input_color()
+                            if not j.get_isInitial():
+                                j.set_value(0)
                     solve(screen, size, grid, clock)
+
+                # User input
+                if event.key == pygame.K_1:
+                    input(grid, selected, 1)
+                if event.key == pygame.K_2:
+                    input(grid, selected, 2)
+                if event.key == pygame.K_3:
+                    input(grid, selected, 3)
+                if event.key == pygame.K_4:
+                    input(grid, selected, 4)
+                if event.key == pygame.K_5:
+                    input(grid, selected, 5)
+                if event.key == pygame.K_6:
+                    input(grid, selected, 6)
+                if event.key == pygame.K_7:
+                    input(grid, selected, 7)
+                if event.key == pygame.K_8:
+                    input(grid, selected, 8)
+                if event.key == pygame.K_9:
+                    input(grid, selected, 9)
+
+                if event.key == pygame.K_DELETE:
+                    if not selected.get_isInitial():
+                        selected.set_value(0)
 
                 if event.key == pygame.K_ESCAPE:
                     grid = make_grid(size)

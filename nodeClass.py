@@ -21,7 +21,8 @@ class Node:
         self.x = row * size + offset
         self.y = col * size + offset
         self.value = value
-        self.color = (255, 255, 255)
+        self.nodeColor = WHITE
+        self.textColor = BLACK
         self.isInitial = False
         self.isUnmodified = False
 
@@ -47,21 +48,30 @@ class Node:
         self.isUnmodified = value
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.size, self.size))
+        pygame.draw.rect(screen, self.nodeColor, (self.x, self.y, self.size, self.size))
         font = pygame.font.SysFont(None, 60)
         if self.value != 0 or self.isUnmodified:
-            screen_text = font.render(str(self.value), True, BLACK)
+            screen_text = font.render(str(self.value), True, self.textColor)
             screen.blit(screen_text, (self.x + self.size / 2 - screen_text.get_width() / 2,
                                       self.y + self.size / 2 - screen_text.get_height() / 2))
 
     def make_default(self):
-        self.color = WHITE
+        self.nodeColor = WHITE
 
     def make_selected(self):
-        self.color = GREY
+        self.nodeColor = GREY
 
     def make_solved(self):
-        self.color = GREEN
+        self.nodeColor = GREEN
 
     def make_error(self):
-        self.color = RED
+        self.nodeColor = RED
+
+    def reset_input_color(self):
+        self.textColor = BLACK
+
+    def make_input_error(self):
+        self.textColor = RED
+
+    def make_input_solved(self):
+        self.textColor = BLUE
