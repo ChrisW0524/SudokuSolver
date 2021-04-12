@@ -71,12 +71,12 @@ def get_clicked_pos(size):
 def check_possible(grid, row, col, number):
     # Check if rows are possible
     for i in range(0, 9):
-        if grid[row][i].get_value() == number:
+        if grid[row][i].get_value() == number and i != col:
             return False
 
     # Check if columns are possible
     for i in range(0, 9):
-        if grid[i][col].get_value() == number:
+        if grid[i][col].get_value() == number and i != row:
             return False
 
     # Check if squares are possible
@@ -84,7 +84,7 @@ def check_possible(grid, row, col, number):
     x = (col // 3) * 3
     for i in range(y, y + 3):
         for j in range(x, x + 3):
-            if grid[i][j].get_value() == number:
+            if grid[i][j].get_value() == number and (i, j) != (row, col):
                 return False
 
     return True
@@ -135,6 +135,7 @@ def solve(screen, size, grid, clock):
 
     return False
 
+
 def input(grid, selected, value):
     if not selected:
         return
@@ -148,17 +149,39 @@ def input(grid, selected, value):
             selected.make_input_error()
 
 
+def check_game(grid):
+    for row in grid:
+        for node in row:
+            if not check_possible(grid, node.get_pos()[0], node.get_pos()[1], node.get_value()) or node.get_value() ==0:
+                return False
+    return True
+
+def print_board(grid):
+    print(' ')
+    test = []
+    for i in grid:
+        test.append(i)
+
+    for i in test:
+        for j in i:
+            print(j.get_value(), end='')
+            print(' ', end='')
+        print('')
+
 # Main game loop ------------------------------------------------------------------------------------------------------#
 def main(screen, size, clock):
     # Initialize game loop variables
     run = True
     grid = make_grid(size)
 
+    print_board(grid)
+
     selected = None
 
     while run:
         # Draws elements
         draw(screen, size, grid, clock)
+        print(check_game(grid))
 
         # Event loop
         for event in pygame.event.get():
